@@ -13,8 +13,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Unzip project
-        run: unzip mogbattle.zip -d ./project
+      - name: Unzip and locate project
+        id: locate
+        run: |
+          unzip mogbattle.zip -d ./project
+          echo "=== Files in ./project ==="
+          ls -laR ./project
+          PUBSPEC=$(find ./project -name "pubspec.yaml" -type f | head -1)
+          echo "Found pubspec at: $PUBSPEC"
+          DIR=$(dirname "$PUBSPEC")
+          echo "project_dir=$DIR" >> $GITHUB_OUTPUT
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -29,19 +37,22 @@ jobs:
           cache: true
 
       - name: Install dependencies
-        run: flutter pub get
-        working-directory: ./project/mogbattle
+        run: |
+          cd "${{ steps.locate.outputs.project_dir }}"
+          flutter pub get
 
       - name: Generate code
-        run: dart run build_runner build -d
-        working-directory: ./project/mogbattle
+        run: |
+          cd "${{ steps.locate.outputs.project_dir }}"
+          dart run build_runner build -d
 
       - name: Build APK
-        run: flutter build apk --release
-        working-directory: ./project/mogbattle
+        run: |
+          cd "${{ steps.locate.outputs.project_dir }}"
+          flutter build apk --release
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: MogBattle-APK
-          path: ./project/mogbattle/build/app/outputs/flutter-apk/app-release.apk
+          path: ${{ steps.locate.outputs.project_dir }}/build/app/outputs/flutter-apk/app-release.apk
