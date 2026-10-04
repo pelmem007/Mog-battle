@@ -17,10 +17,7 @@ jobs:
         id: locate
         run: |
           unzip mogbattle.zip -d ./project
-          echo "=== Files in ./project ==="
-          ls -laR ./project
           PUBSPEC=$(find ./project -name "pubspec.yaml" -type f | head -1)
-          echo "Found pubspec at: $PUBSPEC"
           DIR=$(dirname "$PUBSPEC")
           echo "project_dir=$DIR" >> $GITHUB_OUTPUT
 
@@ -36,20 +33,21 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Update Android Embedding
+        run: flutter create .
+        working-directory: ${{ steps.locate.outputs.project_dir }}
+
       - name: Install dependencies
-        run: |
-          cd "${{ steps.locate.outputs.project_dir }}"
-          flutter pub get
+        run: flutter pub get
+        working-directory: ${{ steps.locate.outputs.project_dir }}
 
       - name: Generate code
-        run: |
-          cd "${{ steps.locate.outputs.project_dir }}"
-          dart run build_runner build -d
+        run: dart run build_runner build -d
+        working-directory: ${{ steps.locate.outputs.project_dir }}
 
       - name: Build APK
-        run: |
-          cd "${{ steps.locate.outputs.project_dir }}"
-          flutter build apk --release
+        run: flutter build apk --release
+        working-directory: ${{ steps.locate.outputs.project_dir }}
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
