@@ -30,18 +30,18 @@ jobs:
 
       - name: Install dependencies
         run: flutter pub get
-        working-directory: ./project
+        working-directory: ./project/mogbattle
 
       - name: Generate code
         run: dart run build_runner build -d
-        working-directory: ./project
+        working-directory: ./project/mogbattle
 
       - name: Build APK
         run: flutter build apk --release
-        working-directory: ./project
+        working-directory: ./project/mogbattle
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: MogBattle-APK
-          path: ./project/build/app/outputs/flutter-apk/app-release.apk
+          path: ./project/mogbattle/build/app/outputs/flutter-apk/app-release.apk
